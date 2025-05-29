@@ -1,1 +1,6 @@
-ECHO is on.
+node_modules/
+.env
+.DS_Store
+*.log
+.idea/
+.vscode/
