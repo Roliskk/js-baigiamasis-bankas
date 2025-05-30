@@ -3,23 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Vartotojo registracija</title>
+  <title>Prisijungimas</title>
 </head>
 <body>
-  <h1>Registracija</h1>
-  <p id="welcomeMessage"></p>
+  <h1>Prisijungimas</h1>
 
-  <form id="registerForm">
+  <form id="loginForm">
     <label for="username">Vartotojo vardas:</label><br />
     <input type="text" id="username" name="username" required /><br /><br />
-    
+
     <label for="password">Slaptažodis:</label><br />
     <input type="password" id="password" name="password" required /><br /><br />
-    
-    <button type="submit">Registruotis</button>
-  </form>
-<button id="logoutBtn" style="display:none;">Atsijungti</button>
 
-  <script src="script.js"></script>
+    <button type="submit">Prisijungti</button>
+  </form>
+
+  <script src="login.js"></script>
 </body>
 </html>

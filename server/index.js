@@ -1,19 +1,25 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors');
+const userRoutes = require('./routes/userRoutes');
 const accountRoutes = require('./routes/accountRoutes');
-const userRoutes = require('./routes/userRoutes'); // 🟢 nauja
+const path = require('path');
 
 const app = express();
-app.use(cors());
+
 app.use(express.json());
 
-mongoose.connect('mongodb://localhost:27017/bankas')
-  .then(() => console.log('Prisijungta prie MongoDB'))
-  .catch(err => console.error('MongoDB klaida:', err));
+app.use('/api/users', userRoutes);
+app.use('/api/accounts', accountRoutes);
 
-app.use('/api', accountRoutes);
-app.use('/api', userRoutes); // 🟢 nauja
+app.use(express.static(path.join(__dirname, '../client')));
+
+mongoose.connect('mongodb://localhost:27017/bankas', { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('Prisijungta prie MongoDB'))
+  .catch(err => console.error('Klaida jungiantis prie MongoDB:', err));
 
 const PORT = 5000;
-app.listen(PORT, () => console.log(`Serveris veikia http://localhost:${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Serveris veikia: http://localhost:${PORT}`);
+});
+const cors = require('cors');
+app.use(cors());

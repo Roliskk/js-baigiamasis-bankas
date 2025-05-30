@@ -25,6 +25,29 @@ const registerUser = async (req, res) => {
   }
 };
 
+const loginUser = async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(400).json({ error: 'Vartotojas nerastas' });
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (!isPasswordCorrect) {
+      return res.status(401).json({ error: 'Neteisingas slaptažodis' });
+    }
+
+    res.status(200).json({ message: 'Prisijungimas sėkmingas!' });
+
+} catch (err) {
+  console.error('🔥 Prisijungimo klaida:', err.message);
+  res.status(500).json({ error: err.message });
+}
+};
+
 module.exports = {
-  registerUser
+  registerUser,
+  loginUser
 };
