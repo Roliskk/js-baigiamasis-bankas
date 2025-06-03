@@ -1,3 +1,5 @@
+// client/script.js
+// ...
 document.getElementById('registerForm').addEventListener('submit', async function (e) {
     e.preventDefault();
 
@@ -5,13 +7,26 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     const password = document.getElementById('password').value;
 
     try {
-        const response = await fetch('http://localhost:5000/api/users/register', {
+  
+        const response = await fetch('http://localhost:8000/api/users/register', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ username, password })
         });
+        // ...
+    } catch (error) {
+        console.error('Klaida:', error);
+        alert('Registracija nepavyko! ' + error.message);
+    }
+});
+// ...
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Registracija nepavyko dėl nežinomos priežasties.');
+        }
 
         const data = await response.json();
         console.log(data);
@@ -21,7 +36,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
 
     } catch (error) {
         console.error('Klaida:', error);
-        alert('Registracija nepavyko!');
+        alert('Registracija nepavyko! ' + error.message);
     }
 });
 
