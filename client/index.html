@@ -1,27 +1,30 @@
 <!DOCTYPE html>
 <html lang="lt">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Vartotojo registracija</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vartotojo registracija</title>
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-  <h1>Registracija</h1>
-  <p id="welcomeMessage"></p>
+    <h1>Registracija</h1>
+    <p id="welcomeMessage"></p>
 
-  <form id="registerForm">
-    <label for="username">Vartotojo vardas:</label><br />
-    <input type="text" id="username" name="username" required /><br /><br />
-    
-    <label for="password">Slaptažodis:</label><br />
-    <input type="password" id="password" name="password" required /><br /><br />
-    
-    <button type="submit">Registruotis</button>
-  </form>
-<button id="logoutBtn" style="display:none;">Atsijungti</button>
-<p>Jau turi paskyrą? <a href="login.html">Prisijunk</a></p>
+    <form id="registerForm">
+        <label for="username">Vartotojo vardas:</label><br />
+        <input type="text" id="username" name="username" required /><br /><br />
 
-  <script src="script.js"></script>
+        <label for="password">Slaptažodis:</label><br />
+        <input type="password" id="password" name="password" required /><br /><br />
+
+        <button type="submit">Registruotis</button>
+    </form>
+    <button id="logoutBtn" style="display:none;">Atsijungti</button>
+    <p>Jau turi paskyrą? <a href="login.html">Prisijunk</a></p>
+
+    <script type="module" src="script.js"></script>
 </body>
+
 </html>
