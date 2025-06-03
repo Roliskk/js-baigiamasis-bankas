@@ -1,5 +1,3 @@
-// client/script.js
-// ...
 document.getElementById('registerForm').addEventListener('submit', async function (e) {
     e.preventDefault();
 
@@ -7,7 +5,6 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     const password = document.getElementById('password').value;
 
     try {
-  
         const response = await fetch('http://localhost:8000/api/users/register', {
             method: 'POST',
             headers: {
@@ -15,13 +12,6 @@ document.getElementById('registerForm').addEventListener('submit', async functio
             },
             body: JSON.stringify({ username, password })
         });
-        // ...
-    } catch (error) {
-        console.error('Klaida:', error);
-        alert('Registracija nepavyko! ' + error.message);
-    }
-});
-// ...
 
         if (!response.ok) {
             const errorData = await response.json();
@@ -35,20 +25,28 @@ document.getElementById('registerForm').addEventListener('submit', async functio
         window.location.href = 'index.html';
 
     } catch (error) {
-        console.error('Klaida:', error);
+        console.error('Klaida registruojant:', error);
         alert('Registracija nepavyko! ' + error.message);
     }
 });
 
 const logoutBtn = document.getElementById('logoutBtn');
-const loggedInUser = localStorage.getItem('loggedInUser');
+const welcomeMessage = document.getElementById('welcomeMessage');
 
 if (loggedInUser) {
-    const welcomeMessage = document.getElementById('welcomeMessage');
+    const loggedInUser = localStorage.getItem('loggedInUser');
+
     if (welcomeMessage) {
         welcomeMessage.textContent = `Sveiki, ${loggedInUser}!`;
     }
     logoutBtn.style.display = 'inline';
+} else {
+
+    logoutBtn.style.display = 'none';
+
+    if (welcomeMessage) {
+        welcomeMessage.textContent = '';
+    }
 }
 
 logoutBtn.addEventListener('click', function () {
