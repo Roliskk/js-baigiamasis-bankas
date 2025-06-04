@@ -13,16 +13,21 @@ document.getElementById('registerForm').addEventListener('submit', async functio
             body: JSON.stringify({ username, password })
         });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Registracija nepavyko dėl nežinomos priežasties.');
-        }
+        console.log(response);
 
-        const data = await response.json();
-        console.log(data);
+        // if (!response.ok) {
+        //     const errorData = await response.json();
+        //     throw new Error(errorData.message || 'Registracija nepavyko dėl nežinomos priežasties.');
+        // }
+
+        // const data = await response.json();
+        // console.log(data);
+
+
+
         alert('Registracija sėkminga!');
-        localStorage.setItem('loggedInUser', username);
-        window.location.href = 'index.html';
+        // localStorage.setItem('loggedInUser', username);
+        // window.location.href = 'index.html';
 
     } catch (error) {
         console.error('Klaida registruojant:', error);
@@ -33,21 +38,21 @@ document.getElementById('registerForm').addEventListener('submit', async functio
 const logoutBtn = document.getElementById('logoutBtn');
 const welcomeMessage = document.getElementById('welcomeMessage');
 
-if (loggedInUser) {
-    const loggedInUser = localStorage.getItem('loggedInUser');
+// if (loggedInUser) {
+//     const loggedInUser = localStorage.getItem('loggedInUser');
 
-    if (welcomeMessage) {
-        welcomeMessage.textContent = `Sveiki, ${loggedInUser}!`;
-    }
-    logoutBtn.style.display = 'inline';
-} else {
+//     if (welcomeMessage) {
+//         welcomeMessage.textContent = `Sveiki, ${loggedInUser}!`;
+//     }
+//     logoutBtn.style.display = 'inline';
+// } else {
 
-    logoutBtn.style.display = 'none';
+//     logoutBtn.style.display = 'none';
 
-    if (welcomeMessage) {
-        welcomeMessage.textContent = '';
-    }
-}
+//     if (welcomeMessage) {
+//         welcomeMessage.textContent = '';
+//     }
+// }
 
 logoutBtn.addEventListener('click', function () {
     localStorage.removeItem('loggedInUser');
