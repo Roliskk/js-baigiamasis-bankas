@@ -4,25 +4,96 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vartotojo registracija</title>
+    <title>Banko Valdymas</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <h1>Registracija</h1>
-    <p id="welcomeMessage"></p>
+    <header>
+        <h1>Banko Valdymas</h1>
+        <p id="welcomeMessage"></p>
+        <button id="logoutBtn" style="display:none;">Atsijungti</button>
+    </header>
 
-    <form id="registerForm">
-        <label for="username">Vartotojo vardas:</label><br />
-        <input type="text" id="username" name="username" required /><br /><br />
+    <main>
+        <section id="loggedInContent" style="display:none;">
+            <h2>Vartotojų Paskyros</h2>
+            <p>Čia galite peržiūrėti ir valdyti savo paskyras.</p>
+        </section>
 
-        <label for="password">Slaptažodis:</label><br />
-        <input type="password" id="password" name="password" required /><br /><br />
+        <section id="adminSection" style="display:none;">
+            <h2>Vartotojų valdymas (tik administratoriui)</h2>
+            <form id="registerForm">
+                <h3>Užregistruoti naują vartotoją</h3>
+                <label for="adminUsername">Vartotojo vardas:</label><br />
+                <input type="text" id="adminUsername" name="username" required /><br /><br />
+                <label for="adminPassword">Slaptažodis:</label><br />
+                <input type="password" id="adminPassword" name="password" required /><br /><br />
+                <button type="submit">Registruoti Vartotoją</button>
+            </form>
 
-        <button type="submit">Registruotis</button>
-    </form>
-    <button id="logoutBtn" style="display:none;">Atsijungti</button>
-    <p>Jau turi paskyrą? <a href="login.html">Prisijunk</a></p>
+            <hr>
+
+            <h2>Sąskaitų valdymas (tik administratoriui)</h2>
+            <form id="createAccountForm">
+                <h3>Sukurti naują sąskaitą</h3>
+                <label for="firstName">Vardas:</label><br />
+                <input type="text" id="firstName" name="firstName" required /><br /><br />
+
+                <label for="lastName">Pavardė:</label><br />
+                <input type="text" id="lastName" name="lastName" required /><br /><br />
+
+                <label for="personalId">Asmens kodas:</label><br />
+                <input type="text" id="personalId" name="personalId" required /><br /><br />
+
+                <label for="balance">Pradinis balansas (neprivaloma):</label><br />
+                <input type="number" id="balance" name="balance" step="0.01" value="0"><br /><br />
+
+                <button type="submit">Sukurti naują sąskaitą</button>
+            </form>
+
+            <hr>
+
+            <h3>Visos Sąskaitos</h3>
+            <table id="accountsTable">
+                <thead>
+                    <tr>
+                        <th>Vardas</th>
+                        <th>Pavardė</th>
+                        <th>Asmens kodas</th>
+                        <th>Sąskaitos Nr.</th>
+                        <th>Balansas</th>
+                        <th>Veiksmai</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </section>
+    </main>
+
+    <div id="editAccountModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Redaguoti Sąskaitą</h2>
+            <form id="editAccountForm">
+                <input type="hidden" id="editAccountId">
+                <label for="editFirstName">Vardas:</label><br />
+                <input type="text" id="editFirstName" name="firstName" required /><br /><br />
+
+                <label for="editLastName">Pavardė:</label><br />
+                <input type="text" id="editLastName" name="lastName" required /><br /><br />
+
+                <label for="editPersonalId">Asmens kodas:</label><br />
+                <input type="text" id="editPersonalId" name="personalId" required /><br /><br />
+
+                <label for="editBalance">Balansas:</label><br />
+                <input type="number" id="editBalance" name="balance" step="0.01" required /><br /><br />
+
+                <button type="submit">Atnaujinti Sąskaitą</button>
+            </form>
+        </div>
+    </div>
 
     <script type="module" src="script.js"></script>
 </body>
