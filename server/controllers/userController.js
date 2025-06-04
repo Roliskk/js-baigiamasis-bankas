@@ -56,7 +56,6 @@ const loginUser = async (req, res) => {
           username: user.username,
           role: user.role,
         },
-        // Čia ateityje galėtumėte generuoti JWT žetoną
       });
     } else {
       res.status(401).json({ message: 'Neteisingas vartotojo vardas arba slaptažodis.' });

@@ -24,7 +24,7 @@ const AccountSchema = new mongoose.Schema({
     default: 0
   },
   passportCopy: {
-    type: String // saugomas failo kelias
+    type: String
   }
 });
 

@@ -9,9 +9,6 @@ const accountRoutes = require('./routes/accountRoutes');
 const app = express();
 
 const corsOptions = {
-  // origin: ['http://localhost:5500', 'http://127.0.0.1:5500'],
-  // methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  // allowedHeaders: ['Content-Type', 'application/json']
 };
 
 app.use(cors(corsOptions));
