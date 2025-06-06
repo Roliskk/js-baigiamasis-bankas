@@ -8,10 +8,9 @@ const accountRoutes = require('./routes/accountRoutes');
 
 const app = express();
 
-const corsOptions = {
-};
-
-app.use(cors(corsOptions));
+app.use(cors({
+  origin: 'http://127.0.0.1:5500' // Svarbu: nurodykite tikslų jūsų kliento adresą
+}));
 app.use(express.json()); 
 app.use((req, res, next) => {
     console.log(`Prieinanti užklausa: ${req.method} ${req.originalUrl}`);
@@ -24,7 +23,7 @@ app.use('/api/accounts', accountRoutes);
 
 app.use(express.static(path.join(__dirname, '../client')));
 
-mongoose.connect('mongodb://localhost:27017/bankas')
+mongoose.connect('mongodb+srv://rolandasjasilionis:efJaYrCHbQvzLfQG@cluster0.6ui2e7u.mongodb.net/bankas?retryWrites=true&w=majority&appName=Cluster0')
   .then(() => console.log('Prisijungta prie MongoDB'))
   .catch(err => console.error('Klaida jungiantis prie MongoDB:', err));
 

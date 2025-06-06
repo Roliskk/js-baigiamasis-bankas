@@ -1,37 +1,38 @@
-document.getElementById('loginForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
+document.addEventListener('DOMContentLoaded', () => {
+    const loginForm = document.getElementById('loginForm');
 
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value.trim();
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-    if (!username || !password) {
-        alert('Užpildykite visus laukus!');
-        return;
-    }
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
 
-    try {
-        const response = await fetch('http://localhost:8000/api/users/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username, password })
+            try {
+                const response = await fetch('http://localhost:8000/api/users/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(data.message);
+                    localStorage.setItem('loggedInUser', data.user.username);
+                    localStorage.setItem('userRole', data.user.role);
+                    localStorage.setItem('loggedInUserId', data.user._id); // <-- PRIDĖTA ŠI EILUTĖ
+
+                    window.location.href = 'index.html';
+                } else {
+                    alert(`Prisijungti nepavyko: ${data.message || response.statusText}`);
+                }
+            } catch (error) {
+                console.error('Klaida prisijungiant:', error);
+                alert('Klaida prisijungiant. Bandykite dar kartą.');
+            }
         });
-
-        const data = await response.json();
-
-        if (response.ok) {
-
-            localStorage.setItem('loggedInUser', data.user.username);
-            localStorage.setItem('userRole', data.user.role);
-            alert('Prisijungimas sėkmingas!');
-            window.location.href = 'index.html';
-        } else {
-            alert(data.error || 'Prisijungimas nepavyko.');
-        }
-
-    } catch (err) {
-        console.error('Prisijungimo klaida:', err);
-        alert('Serverio klaida. Bandykite vėliau.');
     }
 });
