@@ -3,148 +3,146 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginLink = document.getElementById('loginLink');
     const logoutLink = document.getElementById('logoutLink');
 
-    // Sekcijos
     const adminSection = document.getElementById('adminSection');
     const userSection = document.getElementById('userSection');
     const registerUserSection = document.getElementById('registerUserSection');
     const createAccountSection = document.getElementById('createAccountSection');
     const accountsOverviewSection = document.getElementById('accountsOverviewSection');
     const transferFundsSection = document.getElementById('transferFundsSection');
+    const welcomeMessage = document.getElementById('welcomeMessage');
 
-    // Formos
     const registerForm = document.getElementById('registerForm');
     const createAccountForm = document.getElementById('createAccountForm');
     const transferFundsForm = document.getElementById('transferFundsForm');
+    const loginForm = document.getElementById('loginForm');
 
-    // Lentelės
     const accountsTableBody = document.getElementById('accountsTableBody');
 
     // Redagavimo modalas ir forma
     const editAccountModal = document.getElementById('editAccountModal');
     const closeEditModal = document.querySelector('.close-button');
     const editAccountForm = document.getElementById('editAccountForm');
-    const editAccountId = document.getElementById('editAccountId');
-    const editFirstName = document.getElementById('editFirstName');
-    const editLastName = document.getElementById('editLastName');
-    const editPersonalId = document.getElementById('editPersonalId');
-    const editAccountNumber = document.getElementById('editAccountNumber');
-    const editBalance = document.getElementById('editBalance');
-    const editPassportCopy = document.getElementById('editPassportCopy');
 
+    const fetchAccounts = async () => {
+        console.log('Bandau gauti sąskaitas...');
+        const token = localStorage.getItem('token');
+        const userRole = localStorage.getItem('role');
+        const loggedInUserId = localStorage.getItem('userId');
 
-    // --- Funkcijos ---
-
-    // Funkcija sąskaitų duomenims gauti ir atvaizduoti
-  // Pakeiskite visą esamą 'fetchAccounts' FUNKCIJOS DEFINICIJĄ šiuo kodu:
-const fetchAccounts = async () => {
-    console.log('Bandau gauti sąskaitas...');
-    const userRole = localStorage.getItem('userRole');
-    const loggedInUserId = localStorage.getItem('loggedInUserId'); // Gaukite prisijungusio vartotojo ID
-
-    let url = 'http://localhost:8000/api/accounts';
-    // Jei vartotojo rolė yra "user", filtruojame sąskaitas pagal jo ID
-    if (userRole === 'user' && loggedInUserId) {
-        url = `http://localhost:8000/api/accounts?userId=${loggedInUserId}`; // Siunčiame userId kaip užklausos parametrą
-        console.log(`Filtruojama sąskaitas vartotojui su ID: ${loggedInUserId}`);
-    } else if (userRole === 'admin') {
-        console.log('Administratorius: rodomos visos sąskaitos.');
-    } else {
-        // Nėra prisijungęs arba nežinoma rolė, nerodome sąskaitų.
-        accountsTableBody.innerHTML = '<tr><td colspan="7">Prašome prisijungti, kad pamatytumėte sąskaitas.</td></tr>';
-        // Taip pat paslepiame pervedimo sekciją, jei niekas neprisijungęs
-        if (transferFundsSection) transferFundsSection.style.display = 'none'; // <-- Nauja eilutė
-        return;
-    }
-
-
-    try {
-        const response = await fetch(url);
-        console.log('Atsakymas iš serverio:', response);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Klaida gaunant sąskaitas: HTTP statusas', response.status, 'Atsakymas:', errorText);
-            accountsTableBody.innerHTML = '<tr><td colspan="7">Klaida įkeliant sąskaitas.</td></tr>';
-            if (transferFundsSection) transferFundsSection.style.display = 'none'; // <-- Nauja eilutė
+        if (!token) {
+            accountsTableBody.innerHTML = '<tr><td colspan="7">Prašome prisijungti, kad pamatytumėte sąskaitas.</td></tr>';
+            if (transferFundsSection) transferFundsSection.style.display = 'none';
             return;
         }
 
-        const accounts = await response.json();
-        console.log('Sąskaitos gautos ir iššifruotos:', accounts);
-
-        accountsTableBody.innerHTML = ''; // Išvalo esamas eilutes
-
-        if (accounts.length === 0) {
-            accountsTableBody.innerHTML = '<tr><td colspan="7">Nėra sukurtų sąskaitų.</td></tr>';
-            if (transferFundsSection) transferFundsSection.style.display = 'none'; // <-- PRIDĖTA ŠI EILUTĖ (sąskaitų nėra, paslepiam pervedimą)
+        let url = 'http://localhost:8000/api/accounts';
+        if (userRole === 'user' && loggedInUserId) {
+            url = `http://localhost:8000/api/accounts?userId=${loggedInUserId}`;
+            console.log(`Filtruojama sąskaitas vartotojui su ID: ${loggedInUserId}`);
+        } else if (userRole === 'admin') {
+            console.log('Administratorius: rodomos visos sąskaitos.');
         } else {
-            // Jei yra sąskaitų, įsitikiname, kad pervedimo sekcija yra matoma
-            if (transferFundsSection) transferFundsSection.style.display = 'block'; // <-- PRIDĖTA ŠI EILUTĖ (sąskaitos yra, parodom pervedimą)
-            accounts.forEach(account => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${account.firstName}</td>
-                    <td>${account.lastName}</td>
-                    <td>${account.personalId}</td>
-                    <td>${account.accountNumber}</td>
-                    <td>${parseFloat(account.balance).toFixed(2)} €</td>
-                    <td>
-                        <button onclick="editAccount('${account._id}')">Redaguoti</button>
-                        <button onclick="deleteAccount('${account._id}')">Ištrinti</button>
-                    </td>
-                    <td>${account.passportCopy ? 'Yra' : 'Nėra'}</td>
-                `;
-                accountsTableBody.appendChild(row);
-            });
+            accountsTableBody.innerHTML = '<tr><td colspan="7">Klaida: Nepažįstama rolė.</td></tr>';
+            if (transferFundsSection) transferFundsSection.style.display = 'none';
+            return;
         }
-    } catch (error) {
-        console.error('Bendroji klaida gaunant sąskaitas:', error);
-        accountsTableBody.innerHTML = '<tr><td colspan="7">Klaida įkeliant sąskaitas.</td></tr>';
-        if (transferFundsSection) transferFundsSection.style.display = 'none'; // <-- Nauja eilutė
-    }
-};
 
-    // Funkcija, kuri parodo sąskaitos redagavimo modalą
-    window.editAccount = async (id) => { // Padaryta globalia, kad būtų pasiekiama iš onclick
         try {
-            const response = await fetch(`http://localhost:8000/api/accounts/${id}`);
-            const account = await response.json();
+            const response = await fetch(url, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            console.log('Atsakymas iš serverio:', response);
 
-            if (response.ok) {
-                editAccountId.value = account._id;
-                editFirstName.value = account.firstName;
-                editLastName.value = account.lastName;
-                editPersonalId.value = account.personalId;
-                editAccountNumber.value = account.accountNumber;
-                editBalance.value = account.balance;
-                editPassportCopy.checked = account.passportCopy;
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Klaida gaunant sąskaitas: HTTP statusas', response.status, 'Atsakymas:', errorText);
+                accountsTableBody.innerHTML = '<tr><td colspan="7">Klaida įkeliant sąskaitas.</td></tr>';
+                if (transferFundsSection) transferFundsSection.style.display = 'none';
+                return;
+            }
 
-                editAccountModal.style.display = 'block';
+            const accounts = await response.json();
+            console.log('Sąskaitos gautos ir iššifruotos:', accounts);
+
+            accountsTableBody.innerHTML = '';
+
+            if (accounts.length === 0) {
+                accountsTableBody.innerHTML = '<tr><td colspan="7">Nėra sukurtų sąskaitų.</td></tr>';
+                if (transferFundsSection) transferFundsSection.style.display = 'none';
             } else {
-                alert(`Klaida gaunant sąskaitą: ${account.message || response.statusText}`);
+                if (transferFundsSection) transferFundsSection.style.display = 'block';
+                accounts.forEach(account => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${account.firstName}</td>
+                        <td>${account.lastName}</td>
+                        <td>${account.personalId}</td>
+                        <td>${account.accountNumber}</td>
+                        <td>${parseFloat(account.balance).toFixed(2)} €</td>
+                        <td class="actions-cell"></td> <td>${account.passportCopy ? 'Yra' : 'Nėra'}</td>
+                    `;
+
+                    const actionsCell = row.querySelector('.actions-cell');
+
+                    if (userRole === 'admin') {
+                        const editButton = document.createElement('button');
+                        editButton.textContent = 'Redaguoti';
+                        editButton.classList.add('edit-button');
+                        editButton.onclick = () => openEditModal(account);
+                        actionsCell.appendChild(editButton);
+
+                        const deleteButton = document.createElement('button');
+                        deleteButton.textContent = 'Trinti';
+                        deleteButton.classList.add('delete-button');
+                        deleteButton.onclick = () => deleteAccount(account._id);
+                        actionsCell.appendChild(deleteButton);
+                    } else {
+                        actionsCell.textContent = 'Nėra veiksmų';
+                    }
+                    accountsTableBody.appendChild(row);
+                });
             }
         } catch (error) {
-            console.error('Klaida gaunant sąskaitą redagavimui:', error);
-            alert('Klaida gaunant sąskaitą redagavimui.');
+            console.error('Bendroji klaida gaunant sąskaitas:', error);
+            accountsTableBody.innerHTML = '<tr><td colspan="7">Klaida įkeliant sąskaitas.</td></tr>';
+            if (transferFundsSection) transferFundsSection.style.display = 'none';
         }
     };
 
-    // Funkcija sąskaitai ištrinti
-    window.deleteAccount = async (id) => { // Padaryta globalia
+    function openEditModal(account) {
+        document.getElementById('editAccountId').value = account._id;
+        document.getElementById('editFirstName').value = account.firstName;
+        document.getElementById('editLastName').value = account.lastName;
+        document.getElementById('editPersonalId').value = account.personalId;
+        document.getElementById('editAccountNumber').value = account.accountNumber;
+        document.getElementById('editBalance').value = account.balance;
+        document.getElementById('editPassportCopy').checked = account.passportCopy;
+
+        editAccountModal.style.display = 'block';
+    }
+
+    async function deleteAccount(id) {
         if (!confirm('Ar tikrai norite ištrinti šią sąskaitą?')) {
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('Nėra prisijungimo žetono. Prašome prisijungti.');
             return;
         }
 
         try {
             const response = await fetch(`http://localhost:8000/api/accounts/${id}`, {
                 method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
             });
 
             const data = await response.json();
 
             if (response.ok) {
                 alert(data.message);
-                fetchAccounts(); // Atnaujinti sąskaitų sąrašą
+                fetchAccounts();
             } else {
                 alert(`Klaida trinant sąskaitą: ${data.message || response.statusText}`);
             }
@@ -152,59 +150,54 @@ const fetchAccounts = async () => {
             console.error('Klaida trinant sąskaitą:', error);
             alert('Klaida trinant sąskaitą. Bandykite dar kartą.');
         }
-    };
+    }
 
-
-    // Funkcija, kuri patikrina vartotojo būseną ir parodo/paslepia elementus
-    function checkUserStatus() {
-        console.log('Tikrinama vartotojo būsena...');
-        const loggedInUser = localStorage.getItem('loggedInUser');
-        const userRole = localStorage.getItem('userRole');
-
-      if (adminSection) adminSection.style.display = 'none';
+    function updateUIForUser(userRole, username) {
+        if (adminSection) adminSection.style.display = 'none';
         if (userSection) userSection.style.display = 'none';
         if (registerUserSection) registerUserSection.style.display = 'none';
         if (createAccountSection) createAccountSection.style.display = 'none';
         if (accountsOverviewSection) accountsOverviewSection.style.display = 'none';
         if (transferFundsSection) transferFundsSection.style.display = 'none';
-        
-        // Priklausomai nuo prisijungimo būsenos ir rolės
-        if (loggedInUser) {
-            // Prisijungęs
+        if (loginLink) loginLink.style.display = 'block';
+        if (logoutLink) logoutLink.style.display = 'none';
+        if (welcomeMessage) welcomeMessage.style.display = 'none';
+
+
+        if (userRole === 'admin') {
+            if (adminSection) adminSection.style.display = 'block';
+            if (registerUserSection) registerUserSection.style.display = 'block';
+            if (createAccountSection) createAccountSection.style.display = 'block';
+            if (accountsOverviewSection) accountsOverviewSection.style.display = 'block';
+            if (transferFundsSection) transferFundsSection.style.display = 'block';
             if (loginLink) loginLink.style.display = 'none';
             if (logoutLink) logoutLink.style.display = 'block';
-
-            if (userRole === 'admin') {
-                if (adminSection) adminSection.style.display = 'block';
-                if (registerUserSection) registerUserSection.style.display = 'block';
-                if (createAccountSection) createAccountSection.style.display = 'block';
-                if (accountsOverviewSection) accountsOverviewSection.style.display = 'block';
-                if (transferFundsSection) transferFundsSection.style.display = 'block';
-                fetchAccounts(); // Įkelia sąskaitas, jei esame administratorius
-            } else if (userRole === 'user') {
-                if (userSection) userSection.style.display = 'block';
-                if (accountsOverviewSection) accountsOverviewSection.style.display = 'block';
-                if (transferFundsSection) transferFundsSection.style.display = 'block';
-                // Paprastas vartotojas neturi matyti registracijos ir sąskaitos kūrimo formų
-                if (registerUserSection) registerUserSection.style.display = 'none'; // Paslėpti
-                if (createAccountSection) createAccountSection.style.display = 'none'; // Paslėpti
-                fetchAccounts(); // Įkelia sąskaitas, jei esame vartotojas
+            if (welcomeMessage) {
+                welcomeMessage.textContent = `Sveiki, Administratoriau (${username})!`;
+                welcomeMessage.style.display = 'block';
+            }
+        } else if (userRole === 'user') {
+            if (userSection) userSection.style.display = 'block';
+            if (accountsOverviewSection) accountsOverviewSection.style.display = 'block';
+            if (transferFundsSection) transferFundsSection.style.display = 'block';
+            if (loginLink) loginLink.style.display = 'none';
+            if (logoutLink) logoutLink.style.display = 'block';
+            if (welcomeMessage) {
+                welcomeMessage.textContent = `Sveiki, ${username}!`;
+                welcomeMessage.style.display = 'block';
             }
         } else {
-            // Nėra prisijungęs
+            // Jei rolė nenustatyta arba nežinoma, paslėpti viską ir parodyti prisijungimo nuorodą
             if (loginLink) loginLink.style.display = 'block';
             if (logoutLink) logoutLink.style.display = 'none';
+            if (welcomeMessage) welcomeMessage.style.display = 'none';
         }
+        fetchAccounts();
     }
 
-
-    // --- Įvykių klausytojai (Event Listeners) ---
-
-    // Registracijos formos tvarkytuvas
-    if (registerForm) { // Patikrinti, ar elementas egzistuoja
+    if (registerForm) {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-
             const username = document.getElementById('registerUsername').value;
             const password = document.getElementById('registerPassword').value;
             const role = document.getElementById('registerRole').value;
@@ -212,23 +205,19 @@ const fetchAccounts = async () => {
             try {
                 const response = await fetch('http://localhost:8000/api/users/register', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password, role }),
                 });
-
                 const data = await response.json();
-
                 if (response.ok) {
                     alert(data.message);
                     registerForm.reset();
                 } else {
-                    alert(`Klaida registruojant: ${data.message || response.statusText}`);
+                    alert(data.message || 'Nepavyko užregistruoti vartotojo.');
                 }
             } catch (error) {
                 console.error('Klaida registruojant vartotoją:', error);
-                alert('Klaida registruojant vartotoją. Bandykite dar kartą.');
+                alert('Nepavyko užregistruoti vartotojo. Žr. konsolę.');
             }
         });
     }
@@ -236,143 +225,220 @@ const fetchAccounts = async () => {
     if (createAccountForm) {
         createAccountForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-
             const firstName = document.getElementById('firstName').value;
             const lastName = document.getElementById('lastName').value;
             const personalId = document.getElementById('personalId').value;
             const balance = parseFloat(document.getElementById('balance').value);
-            // GAUNAME VARTOTOJO ID IŠ NAUJO LAUKELIO
-            const accountUserId = document.getElementById('accountUserId').value; // <-- PRIDĖTA
+            const userId = document.getElementById('accountUserId').value;
 
-            const userId = accountUserId || null; // Nustatome ID. Jei laukelis tuščias, bus null.
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Nėra prisijungimo žetono. Prašome prisijungti.');
+                return;
+            }
 
             try {
                 const response = await fetch('http://localhost:8000/api/accounts', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
                     },
-                    // PERDUODAME userId Į SERVERĮ
-                    body: JSON.stringify({ firstName, lastName, personalId, balance, userId }), 
+                    body: JSON.stringify({ firstName, lastName, personalId, balance, userId })
                 });
-
                 const data = await response.json();
-
                 if (response.ok) {
-                    alert(data.message);
+                    alert('Sąskaita sėkmingai sukurta!');
                     createAccountForm.reset();
-                    fetchAccounts(); // Atnaujinti sąskaitų sąrašą
+                    fetchAccounts();
                 } else {
-                    alert(`Klaida kuriant sąskaitą: ${data.message || response.statusText}`);
+                    alert(data.message || 'Nepavyko sukurti sąskaitos.');
                 }
             } catch (error) {
                 console.error('Klaida kuriant sąskaitą:', error);
-                alert('Klaida kuriant sąskaitą. Bandykite dar kartą.');
+                alert('Nepavyko sukurti sąskaitos. Žr. konsolę.');
             }
         });
     }
 
-    // Lėšų pervedimo formos tvarkytuvas
     if (transferFundsForm) {
         transferFundsForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-
             const fromAccountNumber = document.getElementById('fromAccountNumber').value;
             const toAccountNumber = document.getElementById('toAccountNumber').value;
             const amount = parseFloat(document.getElementById('amount').value);
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Nėra prisijungimo žetono. Prašome prisijungti.');
+                return;
+            }
 
             try {
                 const response = await fetch('http://localhost:8000/api/accounts/transfer', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ fromAccountNumber, toAccountNumber, amount }),
+                    body: JSON.stringify({ fromAccountNumber, toAccountNumber, amount })
                 });
-
                 const data = await response.json();
-
                 if (response.ok) {
                     alert(data.message);
                     transferFundsForm.reset();
-                    fetchAccounts(); // Atnaujinti sąskaitų sąrašą po pervedimo
+                    fetchAccounts();
                 } else {
-                    alert(`Klaida pervedant lėšas: ${data.message || response.statusText}`);
+                    alert(data.message || 'Lėšų pervedimas nepavyko.');
                 }
             } catch (error) {
                 console.error('Klaida pervedant lėšas:', error);
-                alert('Klaida pervedant lėšas. Bandykite dar kartą.');
+                alert('Lėšų pervedimas nepavyko. Žr. konsolę.');
             }
         });
     }
 
-    // Redagavimo formos tvarkytuvas
     if (editAccountForm) {
         editAccountForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            const accountId = document.getElementById('editAccountId').value;
+            const firstName = document.getElementById('editFirstName').value;
+            const lastName = document.getElementById('editLastName').value;
+            const personalId = document.getElementById('editPersonalId').value;
+            const accountNumber = document.getElementById('editAccountNumber').value;
+            const balance = parseFloat(document.getElementById('editBalance').value);
+            const passportCopy = document.getElementById('editPassportCopy').checked;
 
-            const id = editAccountId.value;
-            const updatedData = {
-                firstName: editFirstName.value,
-                lastName: editLastName.value,
-                personalId: editPersonalId.value,
-                accountNumber: editAccountNumber.value,
-                balance: parseFloat(editBalance.value),
-                passportCopy: editPassportCopy.checked
-            };
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Nėra prisijungimo žetono. Prašome prisijungti.');
+                return;
+            }
 
             try {
-                const response = await fetch(`http://localhost:8000/api/accounts/${id}`, {
+                const response = await fetch(`http://localhost:8000/api/accounts/${accountId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify(updatedData),
+                    body: JSON.stringify({ firstName, lastName, personalId, accountNumber, balance, passportCopy })
                 });
-
                 const data = await response.json();
-
                 if (response.ok) {
-                    alert(data.message);
-                    editAccountModal.style.display = 'none'; // Uždaryti modalą
-                    fetchAccounts(); // Atnaujinti sąskaitų sąrašą
+                    alert('Sąskaita sėkmingai atnaujinta!');
+                    editAccountModal.style.display = 'none';
+                    fetchAccounts();
                 } else {
-                    alert(`Klaida atnaujinant sąskaitą: ${data.message || response.statusText}`);
+                    alert(data.message || 'Nepavyko atnaujinti sąskaitos.');
                 }
             } catch (error) {
                 console.error('Klaida atnaujinant sąskaitą:', error);
-                alert('Klaida atnaujinant sąskaitą. Bandykite dar kartą.');
+                alert('Nepavyko atnaujinti sąskaitos. Žr. konsolę.');
             }
         });
     }
 
-    // Modalo uždarymas
     if (closeEditModal) {
-        closeEditModal.addEventListener('click', () => {
+        closeEditModal.onclick = () => {
             editAccountModal.style.display = 'none';
-        });
+        };
     }
 
     window.onclick = (event) => {
-        if (event.target == editAccountModal) {
+        if (event.target === editAccountModal) {
             editAccountModal.style.display = 'none';
         }
     };
 
-
-    // Atsijungimo funkcionalumas
-    if (logoutLink) {
-        logoutLink.addEventListener('click', (e) => {
+    // Prisijungimo formos tvarkytuvas (tik jei elementas egzistuoja, t.y. login.html)
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            localStorage.removeItem('loggedInUser');
-            localStorage.removeItem('userRole');
-            localStorage.removeItem('loggedInUserId'); // Išvalyti ID atsijungiant
-            alert('Sėkmingai atsijungėte!');
-            window.location.href = 'login.html'; // Nukreipti į prisijungimo puslapį
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('http://localhost:8000/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(data.message);
+                    localStorage.setItem('token', data.token);
+                    console.log('Tokenas nustatytas localStorage:', localStorage.getItem('token'));
+                    localStorage.setItem('role', data.role);
+                    console.log('Rolė nustatyta localStorage:', localStorage.getItem('role'));
+                    localStorage.setItem('username', data.username);
+                    console.log('Vartotojo vardas nustatytas localStorage:', localStorage.getItem('username'));
+                    localStorage.setItem('userId', data.userId);
+                    console.log('Vartotojo ID nustatytas localStorage:', localStorage.getItem('userId'));
+                    // Po sėkmingo prisijungimo, tiesiog nukreipiame
+                    console.log('Nukreipiama į index.html...');
+                    window.location.href = 'index.html';
+                } else {
+                    alert(data.message || 'Nepavyko prisijungti.');
+                }
+            } catch (error) {
+                console.error('Klaida prisijungiant:', error);
+                alert('Nepavyko prisijungti. Žr. konsolę.');
+            }
         });
     }
 
-    // Pradiniam puslapio įkrovimui
-    checkUserStatus();
+    if (logoutLink) {
+        logoutLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            localStorage.removeItem('username');
+            localStorage.removeItem('userId');
+            alert('Sėkmingai atsijungėte.');
+            window.location.href = 'login.html';
+        });
+    }
+
+    // Pagrindinė funkcija, kuri patikrina prisijungimo būseną ir atnaujina UI
+    function checkLoginStatus() {
+        console.log('checkLoginStatus funkcija iškviesta.');
+        const token = localStorage.getItem('token');
+        console.log('checkLoginStatus - tokenas:', token);
+        const userRole = localStorage.getItem('role');
+        console.log('checkLoginStatus - rolė:', userRole);
+        const username = localStorage.getItem('username');
+        console.log('checkLoginStatus - vartotojo vardas:', username);
+        const userId = localStorage.getItem('userId');
+        console.log('checkLoginStatus - vartotojo ID:', userId);
+
+        // Jei vartotojas jau yra prisijungęs (turi tokeną) ir bando pasiekti login.html,
+        // nukreipiame jį į index.html, kad nebūtų "užstrigęs" prisijungimo puslapyje.
+        if (window.location.pathname.endsWith('login.html')) {
+            console.log('Dabartinis puslapis: login.html');
+            if (token) { // Jei login.html ir YRA tokenas
+                console.log('checkLoginStatus: login.html, bet tokenas RASTAS, nukreipiama į index.html.');
+                window.location.href = 'index.html';
+            } else {
+                console.log('checkLoginStatus: login.html, tokeno NĖRA. Leidžiama pasirodyti login.html.');
+            }
+            return;
+        }
+
+        // Ši dalis vykdoma tik tada, kai esame index.html (arba bet kuriame kitame apsaugotame puslapyje)
+        // ir tikriname, ar vartotojas turi būti prisijungęs.
+        console.log('Dabartinis puslapis: index.html (arba kitas apsaugotas puslapis)');
+        if (token && userRole && username && userId) {
+            console.log('checkLoginStatus: Tokenas ir rolė RASTI. Atnaujinama UI.');
+            updateUIForUser(userRole, username);
+        } else {
+            console.log('checkLoginStatus: Tokeno ar rolės NĖRA. Peradresuojama į login.html.');
+            alert('Jūs neprisijungęs. Prašome prisijungti.');
+            window.location.href = 'login.html';
+        }
+    }
+    // Iškviesti funkciją puslapio įkrovimo metu
+    checkLoginStatus();
 
 });
