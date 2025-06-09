@@ -9,6 +9,7 @@ const userRoutes = require('./routes/userRoutes');
 const accountRoutes = require('./routes/accountRoutes');
 
 const app = express();
+const transactionRoutes = require('./routes/transactionRoutes');
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("Prisijungta prie MongoDB"))
@@ -28,6 +29,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/accounts', accountRoutes);
 
 app.use(express.static(path.join(__dirname, '../client')));
+app.use('/api/transactions', transactionRoutes);
 
 const PORT = 8000;
 app.listen(PORT, () => {
