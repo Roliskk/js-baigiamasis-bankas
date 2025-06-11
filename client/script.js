@@ -1,4 +1,53 @@
 document.addEventListener('DOMContentLoaded', () => {
+     async function populateUserDropdown() {
+        const dropdown = document.getElementById('accountUserIdDropdown');
+
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) throw new Error('Autentifikacijos žetonas nerastas.');
+
+            const response = await fetch('http://localhost:8000/api/users', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: 'Nepavyko gauti klaidos pranešimo.' }));
+                throw new Error(errorData.message || `Serverio klaida: ${response.status}`);
+            }
+
+            const users = await response.json();
+
+            dropdown.innerHTML = '<option value="">Pasirinkite vartotoją</option>';
+
+            if (users && Array.isArray(users)) {
+                users.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user._id;
+                    option.textContent = `${user.username}`;
+                    dropdown.appendChild(option);
+                });
+            }
+
+            dropdown.addEventListener('change', () => {
+                const manualInput = document.getElementById('accountUserId');
+                if (manualInput) {
+                    manualInput.value = dropdown.value;
+                }
+            });
+
+        } catch (error) {
+            console.error('Klaida gaunant vartotojus išskleidžiamam meniu:', error);
+            if (dropdown) {
+                dropdown.innerHTML = '<option value="">Nepavyko užkrauti vartotojų</option>';
+            }
+        }
+    }
+
+    // 👇 Tiesiog palik šią eilutę kur nors tame pačiame bloke (pvz., po visais const):
+    populateUserDropdown();
+
     // Navigacijos elementai
     const loginLink = document.getElementById('loginLink');
     const logoutLink = document.getElementById('logoutLink');
@@ -176,6 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 welcomeMessage.textContent = `Sveiki, Administratoriau (${username})!`;
                 welcomeMessage.style.display = 'block';
             }
+            populateUserDropdown();
         } else if (userRole === 'user') {
             if (userSection) userSection.style.display = 'block';
             if (accountsOverviewSection) accountsOverviewSection.style.display = 'block';
@@ -439,6 +489,63 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     // Iškviesti funkciją puslapio įkrovimo metu
-    checkLoginStatus();
+    
+// 🟢 Užpildyti vartotojų sąrašą (dropdown) sąskaitos kūrimo formoje
+async function populateUserDropdown() {
+const dropdown = document.getElementById('accountUserIdDropdown');
 
+try {
+    // 1. Gaukite 'token' iš localStorage
+    const token = localStorage.getItem('token');
+    if (!token) {
+        throw new Error('Autentifikacijos žetonas nerastas.');
+    }
+
+    // 2. Pridėkite 'Authorization' antraštę į užklausą
+    const response = await fetch('http://localhost:8000/api/users', {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+
+    // 3. Patikrinkite, ar serveris atsakė sėkmingai (statusas 200-299)
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Nepavyko gauti klaidos pranešimo.' }));
+        throw new Error(errorData.message || `Serverio klaida: ${response.status}`);
+    }
+
+    // 4. Tik jei viskas gerai, apdorokite atsakymą
+    const users = await response.json();
+
+    // Išvalyti senus pasirinkimus
+    dropdown.innerHTML = '<option value="">Pasirinkite vartotoją</option>';
+
+    // Saugiai užpildome dropdown'ą
+    if (users && Array.isArray(users)) {
+        users.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user._id; // Naudosime vartotojo ID kaip vertę
+            option.textContent = `${user.username}`; // Rodysime vartotojo vardą
+            dropdown.appendChild(option);
+        });
+    }
+
+} catch (error) {
+    // Sugaukite bet kokias klaidas (tinklo, autorizacijos, ir t.t.) ir parodykite jas konsolėje
+    console.error('Klaida gaunant vartotojus išskleidžiamam meniu:', error);
+    // Atnaujiname UI, kad vartotojas matytų problemą
+    if (dropdown) {
+        dropdown.innerHTML = '<option value="">Nepavyko užkrauti vartotojų</option>';
+    }
+}
+}
+
+});
+document.addEventListener("DOMContentLoaded", () => {
+    const userRole = localStorage.getItem("userRole"); // Gauname vartotojo rolę iš localStorage
+
+    if (userRole === "admin") {
+        document.getElementById("adminSection").style.display = "block"; // Rodome admin sekciją
+        document.getElementById("createAccountSection").style.display = "block"; // Rodome sąskaitos kūrimo formą
+    }
 });
