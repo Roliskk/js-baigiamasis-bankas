@@ -2,6 +2,16 @@ const User = require('../models/Users');
 const bcrypt = require('bcryptjs');
 const generateToken = require('../utils/generateToken');
 
+const getUsers = async (req, res) => {
+    try {
+        const users = await User.find({}, '_id username role');
+        res.json(users);
+    } catch (error) {
+        console.error('Klaida gaunant vartotojus:', error);
+        res.status(500).json({ message: 'Serverio klaida gaunant vartotojus.' });
+    }
+};
+
 const registerUser = async (req, res) => {
     const { username, password, role } = req.body;
 
@@ -48,24 +58,24 @@ const loginUser = async (req, res) => {
     }
 
     try {
-      console.log("Gaunamas username:", username);
-console.log("Gaunamas password:", password);
+        console.log("Gaunamas username:", username);
+        console.log("Gaunamas password:", password);
 
         const user = await User.findOne({ username });
 
-       if (user && (await user.matchPassword(password))) {
-    res.status(200).json({
-        message: 'Prisijungimas sėkmingas.',
-        user: {
-            _id: user._id,
-            username: user.username,
-            role: user.role,
-        },
-        token: generateToken(user)
-    });
-} else {
-    res.status(401).json({ message: 'Neteisingas vartotojo vardas arba slaptažodis.' });
-}
+        if (user && (await user.matchPassword(password))) {
+            res.status(200).json({
+                message: 'Prisijungimas sėkmingas.',
+                user: {
+                    _id: user._id,
+                    username: user.username,
+                    role: user.role,
+                },
+                token: generateToken(user)
+            });
+        } else {
+            res.status(401).json({ message: 'Neteisingas vartotojo vardas arba slaptažodis.' });
+        }
 
     } catch (error) {
         console.error('Klaida prisijungiant vartotojui:', error);
@@ -73,8 +83,8 @@ console.log("Gaunamas password:", password);
     }
 };
 
-
 module.exports = {
     registerUser,
     loginUser,
+    getUsers
 };

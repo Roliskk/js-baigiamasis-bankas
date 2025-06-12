@@ -1,3 +1,5 @@
+const jwt = require('jsonwebtoken');
+
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -6,10 +8,11 @@ function authenticateToken(req, res, next) {
     return res.status(401).json({ message: 'Nepateiktas žetonas (token).' });
   }
 
-  // Kadangi nenaudojame JWT, tik patikriname ar token yra ne "fake"
-  if (token === 'fakeToken') {
-    return next();
-  } else {
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
     return res.status(403).json({ message: 'Neleistinas žetonas.' });
   }
 }

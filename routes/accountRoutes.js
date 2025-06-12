@@ -26,7 +26,7 @@ const upload = multer({ storage: storage });
 router.get('/', authenticateToken, async (req, res) => {
     try {
         const { userId } = req.query;
-        const filter = userId ? { userId } : {};
+        const filter = userId ? { user: userId } : {}; // 🔄 Codex taisymas
         const accounts = await Account.find(filter);
         res.json(accounts);
     } catch (error) {
@@ -40,7 +40,7 @@ router.post('/', authenticateToken, async (req, res) => {
     try {
         const { firstName, lastName, personalId, balance, userId } = req.body;
         const accountNumber = 'LT' + Math.floor(Math.random() * 1000000000000000);
-        const newAccount = new Account({ firstName, lastName, personalId, accountNumber, balance, userId });
+        const newAccount = new Account({ firstName, lastName, personalId, accountNumber, balance, user: userId }); // 🔄 Codex taisymas
         await newAccount.save();
         res.status(201).json({ message: 'Sąskaita sukurta.', account: newAccount });
     } catch (error) {
@@ -80,7 +80,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// 🔄 Paso kopijos įkėlimas
+// Paso kopijos įkėlimas
 router.post('/:id/upload-passport', authenticateToken, upload.single('passportFile'), async (req, res) => {
     try {
         if (!req.file) {
