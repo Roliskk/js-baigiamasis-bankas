@@ -23,7 +23,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB limitas
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
     fileFilter: function (req, file, cb) {
         const allowedTypes = /jpeg|jpg|png|pdf/;
         const isValidType = allowedTypes.test(file.mimetype.toLowerCase());
@@ -35,11 +35,10 @@ const upload = multer({
     }
 });
 
-// Gauti sąskaitas
+// 🟢 Gauti sąskaitas – tik savo, jei ne admin
 router.get('/', authenticateToken, async (req, res) => {
     try {
-        const { userId } = req.query;
-        const filter = userId ? { user: userId } : {}; // 🔄 Codex taisymas
+        const filter = req.user.role === 'admin' ? {} : { user: req.user.id }; // ✅ Codex pataisymas
         const accounts = await Account.find(filter);
         res.json(accounts);
     } catch (error) {
@@ -53,7 +52,7 @@ router.post('/', authenticateToken, async (req, res) => {
     try {
         const { firstName, lastName, personalId, balance, userId } = req.body;
         const accountNumber = 'LT' + Math.floor(Math.random() * 1000000000000000);
-        const newAccount = new Account({ firstName, lastName, personalId, accountNumber, balance, user: userId }); // 🔄 Codex taisymas
+        const newAccount = new Account({ firstName, lastName, personalId, accountNumber, balance, user: userId });
         await newAccount.save();
         res.status(201).json({ message: 'Sąskaita sukurta.', account: newAccount });
     } catch (error) {
@@ -100,10 +99,7 @@ router.post('/:id/upload-passport', authenticateToken, upload.single('passportFi
             return res.status(400).json({ message: 'Nepateiktas failas.' });
         }
 
-        console.log('📦 Gauta failo informacija:', req.file);
-
         const accountId = req.params.id;
-
         const updated = await Account.findByIdAndUpdate(accountId, {
             passportCopy: true,
             passportFilePath: req.file.path
@@ -125,5 +121,3 @@ router.post('/:id/upload-passport', authenticateToken, upload.single('passportFi
 });
 
 module.exports = router;
-// Šis failas apima sąskaitų valdymo maršrutus, įskaitant sąskaitų kūrimą, atnaujinimą, trynimą ir paso kopijos įkėlimą.
-// Jis taip pat naudoja multer biblioteką failų įkėlimui ir saugojimo konfigūraciją, kad užtikrintų, jog failai yra saugomi tinkamai.
