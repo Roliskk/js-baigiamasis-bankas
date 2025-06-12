@@ -20,7 +20,20 @@ const storage = multer.diskStorage({
         cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
     }
 });
-const upload = multer({ storage: storage });
+
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB limitas
+    fileFilter: function (req, file, cb) {
+        const allowedTypes = /jpeg|jpg|png|pdf/;
+        const isValidType = allowedTypes.test(file.mimetype.toLowerCase());
+        if (isValidType) {
+            cb(null, true);
+        } else {
+            cb(new Error('Leidžiami tik JPG, PNG arba PDF failai.'));
+        }
+    }
+});
 
 // Gauti sąskaitas
 router.get('/', authenticateToken, async (req, res) => {
@@ -86,16 +99,25 @@ router.post('/:id/upload-passport', authenticateToken, upload.single('passportFi
         if (!req.file) {
             return res.status(400).json({ message: 'Nepateiktas failas.' });
         }
+
+        console.log('📦 Gauta failo informacija:', req.file);
+
         const accountId = req.params.id;
+
         const updated = await Account.findByIdAndUpdate(accountId, {
-            passportCopy: true
+            passportCopy: true,
+            passportFilePath: req.file.path
         }, { new: true });
 
         if (!updated) {
             return res.status(404).json({ message: 'Sąskaita nerasta.' });
         }
 
-        res.json({ message: 'Paso kopija įkelta sėkmingai.', file: req.file.filename });
+        res.json({
+            message: 'Paso kopija įkelta sėkmingai.',
+            file: req.file.filename,
+            path: req.file.path
+        });
     } catch (error) {
         console.error('Klaida įkeliant paso kopiją:', error);
         res.status(500).json({ message: 'Serverio klaida.' });
@@ -103,3 +125,5 @@ router.post('/:id/upload-passport', authenticateToken, upload.single('passportFi
 });
 
 module.exports = router;
+// Šis failas apima sąskaitų valdymo maršrutus, įskaitant sąskaitų kūrimą, atnaujinimą, trynimą ir paso kopijos įkėlimą.
+// Jis taip pat naudoja multer biblioteką failų įkėlimui ir saugojimo konfigūraciją, kad užtikrintų, jog failai yra saugomi tinkamai.

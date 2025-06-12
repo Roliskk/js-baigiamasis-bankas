@@ -9,7 +9,7 @@ const accountSchema = mongoose.Schema(
         accountNumber: { type: String, required: true, unique: true },
         balance: { type: Number, required: true, default: 0 },
         passportCopy: { type: Boolean, default: false },
-
+        passportFilePath: { type: String },
         // NAUJAS LAUKAS: nuoroda į vartotojo ID
         user: {
             type: mongoose.Schema.Types.ObjectId, // Tai yra MongoDB objekto ID
