@@ -1,9 +1,24 @@
+# Node.js priklausomybių aplankas – labai didelis, generuojamas automatiškai
 node_modules/
+
+# Aplinkos kintamumų failas – turi slaptažodžius ar API raktus
 .env
+
+# macOS sistemos šiukšlė
 .DS_Store
+
+# Įvairūs log failai (pvz., serverio klaidos, prisijungimai ir t.t.)
 *.log
+
+# JetBrains IDE (pvz., WebStorm) nustatymai
 .idea/
+
+# VS Code projektiniai nustatymai
 .vscode/
 
+# Vartotojo įkelti failai – jų nenoriu laikyti repozitorijuje
 uploads/*
+
+# ...bet noriu, kad uploads aplankas egzistuotų (Git ignoruoja tuščius aplankus),
+# todėl įtraukiu „.gitkeep“ failą
 !uploads/.gitkeep
