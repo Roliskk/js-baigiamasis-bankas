@@ -1,5 +1,5 @@
 const User = require('../models/Users');
-const bcrypt = require('bcryptjs'); // ✅ Pridėtas slaptažodžio šifravimas
+const bcrypt = require('bcryptjs');
 const generateToken = require('../utils/generateToken');
 
 // Gauti visus vartotojus
@@ -28,10 +28,10 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: 'Vartotojas su tokiu vartotojo vardu jau egzistuoja.' });
         }
 
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+        const requestedRole = role === 'admin' ? 'admin' : 'user';
+        const assignedRole = req.user?.role === 'admin' ? requestedRole : 'user';
 
-        const newUser = new User({ username, password: hashedPassword, role });
+        const newUser = new User({ username, password, role: assignedRole });
         await newUser.save();
 
         const token = generateToken(newUser);
